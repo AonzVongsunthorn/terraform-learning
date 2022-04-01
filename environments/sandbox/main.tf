@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "sandbox_terraform_demo" {
-  bucket  = "terraform-demo"
+  bucket  = "terraform-demo-20220401"
 }
 
 resource "aws_s3_bucket_acl" "sandbox_terraform_demo_acl" {
