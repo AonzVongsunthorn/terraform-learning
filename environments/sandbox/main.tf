@@ -43,6 +43,8 @@ resource "aws_security_group" "sandbox_web" {
 }
 
 resource "aws_instance" "sandbox_web" {
+  count = 2 # create 2 instances
+
   ami           = "" # using https://aws.amazon.com/marketplace/pp/prodview-lzep7hqg45g7k for sample nginx plugin
   instance_type = "t2.nano"
 
@@ -52,7 +54,12 @@ resource "aws_instance" "sandbox_web" {
 }
 
 resource "aws_eip" "sandbox_web" {
-  instance = aws_instance.sandbox_web.id
+  # instance = aws_instance.sandbox_web.id
+}
+
+resource "aws_eip_association" "sandbox_web" {
+  instance_id = aws_instance.sandbox_web[0].id
+  allocation_id = aws_eip.sandbox_web.id
 }
 
 resource "aws_default_vpc" "default_network" {}
