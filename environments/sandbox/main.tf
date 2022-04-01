@@ -62,4 +62,26 @@ resource "aws_eip_association" "sandbox_web" {
   allocation_id = aws_eip.sandbox_web.id
 }
 
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "ap-southeast-1a"
+}
+
+resource "aws_default_subnet" "default_az2" {
+  availability_zone = "ap-southeast-1b"
+}
+
+resource "aws_elb" "sandbox_web" {
+  name            = "sandbox-web"
+  instances       = aws_instance.sandbox_web.*.id
+  subnets         = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  security_groups = [aws_security_group.sandbox_web.id]
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+}
+
 resource "aws_default_vpc" "default_network" {}
