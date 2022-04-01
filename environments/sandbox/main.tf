@@ -41,3 +41,18 @@ resource "aws_security_group" "sandbox_web" {
     "Terraform" : "true"
   }
 }
+
+resource "aws_instance" "sandbox_web" {
+  ami           = "" # using https://aws.amazon.com/marketplace/pp/prodview-lzep7hqg45g7k for sample nginx plugin
+  instance_type = "t2.nano"
+
+  vpc_security_group_ids = [
+    aws_security_group.sandbox_web.id
+  ]
+}
+
+resource "aws_eip" "sandbox_web" {
+  instance = aws_instance.sandbox_web.id
+}
+
+resource "aws_default_vpc" "default_network" {}
