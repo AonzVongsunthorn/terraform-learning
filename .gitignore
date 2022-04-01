@@ -1,0 +1,3 @@
+/environments/sandbox/.terraform/
+/environments/sandbox/.terraform.lock.hcl
+.idea
