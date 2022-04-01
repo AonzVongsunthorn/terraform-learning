@@ -42,26 +42,6 @@ resource "aws_security_group" "sandbox_web" {
   }
 }
 
-resource "aws_instance" "sandbox_web" {
-  count = 2 # create 2 instances
-
-  ami           = "" # using https://aws.amazon.com/marketplace/pp/prodview-lzep7hqg45g7k for sample nginx plugin
-  instance_type = "t2.nano"
-
-  vpc_security_group_ids = [
-    aws_security_group.sandbox_web.id
-  ]
-}
-
-resource "aws_eip" "sandbox_web" {
-  # instance = aws_instance.sandbox_web.id
-}
-
-resource "aws_eip_association" "sandbox_web" {
-  instance_id = aws_instance.sandbox_web[0].id
-  allocation_id = aws_eip.sandbox_web.id
-}
-
 resource "aws_default_subnet" "default_az1" {
   availability_zone = "ap-southeast-1a"
 }
@@ -72,7 +52,7 @@ resource "aws_default_subnet" "default_az2" {
 
 resource "aws_elb" "sandbox_web" {
   name            = "sandbox-web"
-  instances       = aws_instance.sandbox_web.*.id
+  # instances       = aws_instance.sandbox_web.*.id
   subnets         = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
   security_groups = [aws_security_group.sandbox_web.id]
 
@@ -82,6 +62,30 @@ resource "aws_elb" "sandbox_web" {
     lb_port           = 80
     lb_protocol       = "http"
   }
+}
+
+resource "aws_launch_template" "sandbox_web" {
+  name_prefix = "sandbox-web"
+  image_id = ""
+  instance_type = "t2.micro"
+}
+
+resource "aws_autoscaling_group" "sandbox_web" {
+  # availability_zones = ['ap-southeast-1a', 'ap-southeast-1b']
+  vpc_zone_identifier = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  desired_capacity    = 1
+  max_size            = 1
+  min_size            = 1
+
+  launch_template {
+    id      = aws_launch_template.sandbox_web.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_autoscaling_attachment" "sandbox_web" {
+  autoscaling_group_name = aws_autoscaling_group.sandbox_web.id
+  elb = aws_elb.sandbox_web.id
 }
 
 resource "aws_default_vpc" "default_network" {}
